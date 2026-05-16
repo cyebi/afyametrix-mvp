@@ -1,0 +1,187 @@
+AFYAMETRIX
+Product Requirements Document (PRD)
+Last Mile Frontline Surveillance Acceleration and Operational Intelligence Platform
+Document purpose:This Product Requirements Document (PRD) defines the business context, operational problem, product scope, user workflows, functional requirements, and MVP delivery direction for Afyametrix. The document is intended to guide product strategy, stakeholder alignment, pilot implementation, technical development, and operational deployment of a frontline surveillance acceleration and operational intelligence platform for public health systems. It outlines how Afyametrix supports faster disease reporting, offline-first frontline workflows, district and regional operational visibility, and rapid escalation mechanisms that complement existing surveillance infrastructure such as SORMAS.
+Product Information
+Field
+Details
+Product name
+Afyametrix
+Product type
+Web and mobile frontline surveillance acceleration and operational intelligence platform
+Product stage
+Minimum Viable Product (MVP) / pilot ready
+Primary market
+Ghana, with West and Central Africa as expansion markets
+Core positioning
+A Surveillance Outbreak Response Management and Analysis System (SORMAS)-native layer that accelerates frontline reporting and transforms surveillance data into operational decisions
+Primary users
+Community-based Health Planning and Services (CHPS) compound health workers, District Health Information Officers (DHIOs), District Disease Surveillance Officers (DSNOs), Regional Directors, Ministry analysts, and donor programme officers
+Goals and Objectives
+Reduce surveillance reporting delays from frontline health facilities to the district level.
+Allow CHPS compound health workers to capture suspected or unusual disease cases offline.
+Notify DSNOs and DHIOs without delay when an edge case or threshold event is reported.
+Provide Short Message Service (SMS) fallback escalation when internet connectivity is unavailable.
+Reduce manual reporting burden and dependency on paper-form reports
+Improve district and regional outbreak visibility through dashboards, alerts, and automated reports.
+Generate measurable evidence for government and donor reporting.
+Assumptions and Constraints
+Assumptions
+Constraints
+SORMAS remains actively used in pilot districts.
+CHPS and facility-level workers need faster escalation workflows.
+Internet connectivity is intermittent in some district contexts.
+SMS remains a reliable fallback channel for lightweight alerts.
+Ghana Health Service and donor stakeholders prefer complementary systems.
+Connectivity and electricity availability may be inconsistent.
+SMS costs and telecom integration may affect scale economics.
+Patient privacy and health data governance must be validated.
+Government procurement cycles may be slow.
+Frontline training and change management may affect adoption.
+Background and Strategic Fit
+African public health systems have improved data collection, but operational decision-making still depends heavily on paper forms, phone calls, and manual reporting.
+At the frontline, health workers in CHPS compounds may report edge cases through informal channels before data reaches official systems.
+Afyametrix bridges the gap between frontline reporting, district notification, and operational intelligence.
+The platform complements SORMAS, District Health Information Software 2 (DHIS2), and other public health systems instead of replacing them.
+Strategically, Afyametrix turns existing digital health investments into faster outbreak awareness, better coordination, and visible operational value.
+Product Roadmap (High-Level)
+Phase
+Focus
+Phase 1 - MVP
+Frontline reporting application, offline case capture, SMS fallback alerts, district dashboard.
+Phase 2 - Pilot Expansion
+Regional dashboard, report exports, escalation tracking, training workflows, and offline synchronization hardening.
+Phase 3 - Integration Expansion
+SORMAS connector, DHIS2 integration, laboratory systems, Application Programming Interfaces (APIs), and advanced analytics.
+Phase 4 - Scale
+National deployment, donor reporting packs, multi-country SORMAS expansion, and selective Artificial Intelligence (AI)-assisted insights.
+Scope (User Stories Adopted from HTML Personas)
+Persona
+Role
+User Story
+Value
+Acceptance Signal
+CHPS Health Worker
+Community-based Health Planning and Services compound reporter
+I want to report unusual disease incidents through Afyametrix
+So district officers can receive alerts immediately.
+The report can be submitted offline and queued for sync.
+CHPS Health Worker
+Frontline reporter
+I want urgent edge cases to trigger SMS fallback when the internet is unavailable
+So DSNOs and DHIOs can be notified without delay.
+SMS contains a lightweight case type, location, time, and reporter ID.
+Kofi Agyemang
+District Health Information Officer
+I want to view a district dashboard of notifiable diseases
+So I can understand current trends without manually building Excel charts.
+Dashboard shows disease counts, trends, facilities, and reporting completeness.
+Kofi Agyemang
+District Health Information Officer
+I want weekly reports generated automatically
+so I can submit accurate Integrated Disease Surveillance and Response updates faster.
+Weekly PDF and Excel reports can be exported.
+District Disease Surveillance Officer
+District outbreak response lead
+I want to receive alerts when cases cross defined thresholds
+so I can escalate potential outbreaks earlier.
+Threshold rules are configurable and alert delivery is logged.
+Dr. Abena Boateng
+Regional Director of Health
+I want to compare district performance across my region
+so I can identify gaps and allocate resources based on evidence.
+Regional dashboard shows district comparisons and hotspot trends.
+Dr. Abena Boateng
+Regional Director of Health
+I want a single regional dashboard
+so I do not have to call each DHIO before national meetings.
+Dashboard provides consolidated view across selected districts.
+Martin Kwesi
+Digital Health Donor Programme Officer
+I want to monitor usage, hours saved, and reporting improvements
+so I can demonstrate SORMAS impact to funders.
+Pilot impact dashboard includes usage, reporting time saved, and alert metrics.
+Ministry Analyst
+National reporting user
+I want exportable summaries for meetings and reporting
+so national teams can make faster evidence-based decisions.
+Exportable summaries are available by district, region, and reporting period.
+Core Features
+Feature
+Description
+Offline-first frontline reporting application
+Allows frontline health workers to capture suspected or unusual cases without internet connectivity.
+SMS fallback escalation
+Sends lightweight urgent alerts to DSNOs and DHIOs when internet access is unavailable.
+District surveillance dashboard
+Shows case counts, disease trends, reporting completeness, facility status, and alert history.
+Threshold-based alerts
+Triggers notifications for disease spikes, reporting delays, and predefined outbreak indicators.
+Automated weekly reports
+Generates PDF and Excel reports for district and regional reporting workflows.
+Regional aggregation dashboard
+Provides district comparison, hotspot visibility, and operational oversight.
+Role-based access control
+Manages access for CHPS users, DHIOs, DSNOs, regional leaders, ministry users, and donors.
+Audit logs and data quality indicators
+Tracks submissions, sync history, alert delivery, and data completeness.
+Release Criteria
+Offline reporting workflows validated successfully with pilot users.
+SMS fallback escalation tested successfully with DSNO and DHIO recipients.
+District dashboards load within agreed performance benchmarks.
+Threshold alert rules are configured, tested, and validated with public health stakeholders.
+Pilot users are trained and can complete core workflows without technical support.
+Support process and issue escalation path are documented.
+Success Metrics
+At least 50% reduction in weekly DHIO reporting time during pilot.
+At least 80% successful offline synchronization completion rate.
+At least 90% successful alert delivery rate for configured urgent events.
+At least 70% active dashboard usage among target district and regional users during pilot.
+Measurable reduction in phone-call-only escalation workflows.
+Improved outbreak detection or escalation response time where measurable.
+Positive feedback from Regional Directors and donor stakeholders on operational visibility.
+Exclusions
+Advanced AI outbreak prediction models.
+Full Electronic Medical Record replacement.
+Complex machine learning forecasting.
+Population digital twin modelling.
+Full national interoperability orchestration at launch.
+Large-scale multi-country rollout before pilot evidence is validated.
+Strategic Note
+Afyametrix should be positioned as a frontline surveillance acceleration and operational intelligence layer that complements SORMAS.
+The strongest differentiation is operational responsiveness in low-connectivity African public health environments.
+Future integrations should expand only after frontline reporting, SMS escalation, and district dashboards prove operational value.
+Selective AI capabilities should be introduced only after baseline operational intelligence workflows stabilize.
+Abbreviations and Acronyms
+Abbreviation
+Full Meaning
+AI
+Artificial Intelligence
+API
+Application Programming Interface
+CHPS
+Community-based Health Planning and Services
+DHIO
+District Health Information Officer
+DHIS2
+District Health Information Software 2
+DSNO
+District Disease Surveillance Officer
+EMR
+Electronic Medical Record
+GHS
+Ghana Health Service
+IDSR
+Integrated Disease Surveillance and Response
+MVP
+Minimum Viable Product
+PDF
+Portable Document Format
+PRD
+Product Requirements Document
+SMS
+Short Message Service
+SORMAS
+Surveillance Outbreak Response Management and Analysis System
+UHC
+Universal Health Coverage

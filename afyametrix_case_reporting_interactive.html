@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Afyametrix Case Reporting - Interactive</title>
+  <style>
+    :root {
+      font-family: "Trebuchet MS", "Gill Sans", "Segoe UI", sans-serif;
+      color: #0a1628;
+      background: #f2f7f4;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    .page {
+      min-height: 100vh;
+      padding: 1rem;
+      background: linear-gradient(135deg, #eaf4ee 0%, #f9fbfa 60%, #dfeee5 100%);
+      display: flex;
+      justify-content: center;
+    }
+    .container { width: 100%; max-width: 680px; }
+    .network {
+      margin-top: 1rem;
+      padding: 0.9rem 1rem;
+      border-radius: 10px;
+      display: flex;
+      gap: 0.6rem;
+      align-items: center;
+      font-weight: 600;
+    }
+    .network.online { background: #d9f0e2; color: #144a2b; }
+    .network.offline { background: #fff0d9; color: #7a4a00; }
+    .card {
+      margin-top: 1rem;
+      padding: 1.25rem;
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 8px 24px rgba(10, 22, 40, 0.08);
+    }
+    .step { color: #486378; margin-top: 0; }
+    .hidden { display: none; }
+    label {
+      display: block;
+      font-weight: 700;
+      margin: 0.85rem 0 0.25rem;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 0.7rem;
+      border: 1px solid #cbd8d0;
+      border-radius: 8px;
+      font: inherit;
+      font-size: 1rem;
+      background: #fff;
+    }
+    textarea { min-height: 100px; resize: vertical; }
+    .actions {
+      display: flex;
+      gap: 0.6rem;
+      margin-top: 1rem;
+      flex-direction: column;
+    }
+    button {
+      border: 0;
+      border-radius: 8px;
+      background: #1a6b3c;
+      color: #fff;
+      padding: 0.85rem 1rem;
+      min-height: 48px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button.secondary { background: #5b6b78; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .status { color: #1a6b3c; margin-top: 0.75rem; font-weight: 600; }
+    .timeline { margin: 0.25rem 0 0; padding-left: 1.1rem; color: #334d61; }
+    .error { color: #9f1d1d; margin-top: 0.5rem; font-weight: 600; }
+    .review p { margin: 0.35rem 0; }
+    @media (min-width: 640px) {
+      .actions { flex-direction: row; }
+      .actions button { flex: 1; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="container">
+      <header>
+        <h1>Afyametrix Case Reporting</h1>
+        <p>CHPS frontline reporting with offline-first submission and district sync.</p>
+      </header>
+
+      <section id="networkBanner" class="network online">
+        <strong id="networkState">Online</strong>
+        <span id="networkHint">Ready to sync queued reports</span>
+      </section>
+
+      <section class="card">
+        <h2>Case Report Form</h2>
+        <p id="stepLabel" class="step">Step 1 of 4</p>
+
+        <div id="step1">
+          <label for="caseType">Case Type</label>
+          <input id="caseType" type="text" value="suspected_cholera" list="caseTypeOptions" />
+          <datalist id="caseTypeOptions">
+            <option value="suspected_cholera"></option>
+            <option value="suspected_measles"></option>
+            <option value="suspected_meningitis"></option>
+            <option value="suspected_yellow_fever"></option>
+            <option value="suspected_covid19"></option>
+          </datalist>
+
+          <label for="location">Location / CHPS Site</label>
+          <input id="location" type="text" value="CHPS-001" />
+
+          <h4>Capture Library</h4>
+          <p id="libraryHint">Choose a suspected case type to load default symptoms and checklist.</p>
+          <ul id="captureChecklist" class="timeline"></ul>
+
+          <div class="actions">
+            <button id="loadDefaults" class="secondary" type="button">Load Default Symptoms</button>
+            <button id="toStep2" type="button">Continue</button>
+          </div>
+        </div>
+
+        <div id="step2" class="hidden">
+          <label for="symptoms">Symptoms</label>
+          <textarea id="symptoms" placeholder="e.g. vomiting, diarrhea, fever"></textarea>
+
+          <label for="severity">Severity</label>
+          <select id="severity">
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+            <option value="urgent" selected>Urgent</option>
+          </select>
+
+          <div class="actions">
+            <button id="backTo1" class="secondary" type="button">Back</button>
+            <button id="toStep3" type="button">Continue</button>
+          </div>
+        </div>
+
+        <div id="step3" class="hidden">
+          <label for="patientGroup">Patient Group</label>
+          <select id="patientGroup">
+            <option value="child">Child</option>
+            <option value="adult" selected>Adult</option>
+            <option value="elderly">Elderly</option>
+          </select>
+
+          <label for="riskSignals">Risk Signals (optional)</label>
+          <input id="riskSignals" type="text" placeholder="e.g. cluster in same household" />
+
+          <div class="actions">
+            <button id="backTo2" class="secondary" type="button">Back</button>
+            <button id="toStep4" type="button">Continue</button>
+          </div>
+        </div>
+
+        <div id="step4" class="hidden">
+          <h3>Review</h3>
+          <div class="review" id="reviewBox"></div>
+
+          <div class="actions">
+            <button id="backTo3" class="secondary" type="button">Back</button>
+            <button id="saveOffline" type="button">Save Offline</button>
+          </div>
+        </div>
+
+        <p id="errorText" class="error hidden"></p>
+
+        <div class="actions">
+          <button id="syncButton" type="button">Sync Queued Reports</button>
+        </div>
+
+        <h3>Queue Status</h3>
+        <p id="queueCount">Queued reports: 0</p>
+        <p id="statusText" class="status">Ready</p>
+
+        <h3>Sync Timeline</h3>
+        <ul id="timeline" class="timeline">
+          <li>No sync activity yet.</li>
+        </ul>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const STORAGE_KEY = "afyametrix_interactive_queue_v1";
+    let currentStep = 1;
+    const CASE_LIBRARY = {
+      suspected_cholera: {
+        symptoms: "acute watery diarrhea, vomiting, dehydration",
+        checklist: [
+          "Record dehydration signs",
+          "Capture water source exposure",
+          "Mark household cluster if present"
+        ]
+      },
+      suspected_measles: {
+        symptoms: "fever, rash, cough, runny nose, red eyes",
+        checklist: [
+          "Confirm rash onset date",
+          "Check vaccination status",
+          "Capture contact with school-age children"
+        ]
+      },
+      suspected_meningitis: {
+        symptoms: "high fever, neck stiffness, severe headache, confusion",
+        checklist: [
+          "Assess neck stiffness",
+          "Check altered consciousness",
+          "Capture rapid deterioration warning"
+        ]
+      },
+      suspected_yellow_fever: {
+        symptoms: "fever, chills, body aches, nausea, jaundice",
+        checklist: [
+          "Record jaundice signs",
+          "Capture mosquito exposure risk",
+          "Note travel history in past 14 days"
+        ]
+      },
+      suspected_covid19: {
+        symptoms: "fever, cough, sore throat, shortness of breath, fatigue",
+        checklist: [
+          "Capture respiratory distress signs",
+          "Record contact with confirmed case",
+          "Note recent mass gathering exposure"
+        ]
+      }
+    };
+
+    const els = {
+      stepLabel: document.getElementById("stepLabel"),
+      errorText: document.getElementById("errorText"),
+      statusText: document.getElementById("statusText"),
+      queueCount: document.getElementById("queueCount"),
+      timeline: document.getElementById("timeline"),
+      reviewBox: document.getElementById("reviewBox"),
+      networkBanner: document.getElementById("networkBanner"),
+      networkState: document.getElementById("networkState"),
+      networkHint: document.getElementById("networkHint"),
+      caseType: document.getElementById("caseType"),
+      location: document.getElementById("location"),
+      symptoms: document.getElementById("symptoms"),
+      severity: document.getElementById("severity"),
+      patientGroup: document.getElementById("patientGroup"),
+      riskSignals: document.getElementById("riskSignals"),
+      loadDefaults: document.getElementById("loadDefaults"),
+      libraryHint: document.getElementById("libraryHint"),
+      captureChecklist: document.getElementById("captureChecklist"),
+      step1: document.getElementById("step1"),
+      step2: document.getElementById("step2"),
+      step3: document.getElementById("step3"),
+      step4: document.getElementById("step4"),
+    };
+
+    function readQueue() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+      } catch {
+        return [];
+      }
+    }
+
+    function writeQueue(queue) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(queue));
+    }
+
+    function queueCount() {
+      return readQueue().filter(item => item.syncStatus === "queued").length;
+    }
+
+    function setStatus(text) {
+      els.statusText.textContent = text;
+    }
+
+    function setError(text) {
+      if (!text) {
+        els.errorText.classList.add("hidden");
+        els.errorText.textContent = "";
+      } else {
+        els.errorText.classList.remove("hidden");
+        els.errorText.textContent = text;
+      }
+    }
+
+    function addTimeline(entry) {
+      const current = Array.from(els.timeline.querySelectorAll("li")).map(li => li.textContent);
+      const next = [`${new Date().toLocaleTimeString()}: ${entry}`, ...current.filter(t => t !== "No sync activity yet.")].slice(0, 6);
+      els.timeline.innerHTML = "";
+      next.forEach(text => {
+        const li = document.createElement("li");
+        li.textContent = text;
+        els.timeline.appendChild(li);
+      });
+    }
+
+    function refreshQueueUi() {
+      els.queueCount.textContent = `Queued reports: ${queueCount()}`;
+    }
+
+    function renderStep() {
+      [els.step1, els.step2, els.step3, els.step4].forEach((el, idx) => {
+        el.classList.toggle("hidden", idx + 1 !== currentStep);
+      });
+      els.stepLabel.textContent = `Step ${currentStep} of 4`;
+      setError("");
+      if (currentStep === 4) {
+        els.reviewBox.innerHTML = `
+          <p><strong>Case:</strong> ${els.caseType.value.trim()}</p>
+          <p><strong>Severity:</strong> ${els.severity.value}</p>
+          <p><strong>Location:</strong> ${els.location.value.trim()}</p>
+          <p><strong>Symptoms:</strong> ${els.symptoms.value.trim()}</p>
+          <p><strong>Patient Group:</strong> ${els.patientGroup.value}</p>
+          <p><strong>Risk Signals:</strong> ${els.riskSignals.value.trim() || "none"}</p>
+        `;
+      }
+    }
+
+    function renderLibrary(caseType) {
+      const key = (caseType || "").trim().toLowerCase();
+      const libraryItem = CASE_LIBRARY[key];
+      els.captureChecklist.innerHTML = "";
+      if (!libraryItem) {
+        els.libraryHint.textContent = "No library template found for this case type yet.";
+        return;
+      }
+      els.libraryHint.textContent = "Template loaded. Review checklist and apply default symptoms if needed.";
+      libraryItem.checklist.forEach((item) => {
+        const li = document.createElement("li");
+        li.textContent = item;
+        els.captureChecklist.appendChild(li);
+      });
+    }
+
+    function loadDefaultSymptoms() {
+      const key = (els.caseType.value || "").trim().toLowerCase();
+      const libraryItem = CASE_LIBRARY[key];
+      if (!libraryItem) {
+        setError("No default symptoms available for this case type.");
+        return;
+      }
+      els.symptoms.value = libraryItem.symptoms;
+      setStatus("Default symptoms loaded from case library.");
+      setError("");
+    }
+
+    function validateStep(step) {
+      if (step === 1) {
+        if (els.caseType.value.trim().length < 3) return "Case type should be at least 3 characters.";
+        if (els.location.value.trim().length < 2) return "Location should be at least 2 characters.";
+      }
+      if (step === 2) {
+        if (els.symptoms.value.trim().length < 3) return "Symptoms should be at least 3 characters.";
+      }
+      return "";
+    }
+
+    function generateRef() {
+      if (window.crypto && window.crypto.randomUUID) return window.crypto.randomUUID();
+      return `ref-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+    }
+
+    function saveOffline() {
+      const err1 = validateStep(1);
+      const err2 = validateStep(2);
+      if (err1 || err2) {
+        setError(err1 || err2);
+        return;
+      }
+
+      const queue = readQueue();
+      queue.push({
+        clientRef: generateRef(),
+        caseType: els.caseType.value.trim(),
+        severity: els.severity.value,
+        symptoms: `${els.symptoms.value.trim()}; group=${els.patientGroup.value}; risk=${els.riskSignals.value.trim() || "none"}`,
+        location: els.location.value.trim(),
+        occurredAt: new Date().toISOString(),
+        syncStatus: "queued",
+      });
+      writeQueue(queue);
+      setStatus("Offline report queued");
+      addTimeline("Case saved offline");
+      refreshQueueUi();
+      currentStep = 1;
+      els.symptoms.value = "";
+      els.riskSignals.value = "";
+      renderStep();
+    }
+
+    function syncQueued() {
+      const queue = readQueue();
+      const queued = queue.filter(item => item.syncStatus === "queued");
+      if (queued.length === 0) {
+        setStatus("No queued reports to sync.");
+        addTimeline("No queued items");
+        return;
+      }
+
+      setStatus("Syncing queued reports...");
+      addTimeline("Sync started");
+
+      setTimeout(() => {
+        queued.forEach(item => {
+          item.syncStatus = "synced";
+          item.syncedAt = new Date().toISOString();
+        });
+        writeQueue(queue);
+        setStatus(`Synced ${queued.length}/${queued.length} reports (0 duplicates).`);
+        addTimeline(`Sync complete (${queued.length}/${queued.length})`);
+        refreshQueueUi();
+      }, 900);
+    }
+
+    function updateNetworkBanner() {
+      const online = navigator.onLine;
+      els.networkBanner.classList.toggle("online", online);
+      els.networkBanner.classList.toggle("offline", !online);
+      els.networkState.textContent = online ? "Online" : "Offline";
+      els.networkHint.textContent = online
+        ? "Ready to sync queued reports"
+        : "You can continue capturing cases offline";
+    }
+
+    document.getElementById("toStep2").addEventListener("click", () => {
+      const err = validateStep(1);
+      if (err) return setError(err);
+      currentStep = 2;
+      renderStep();
+    });
+    document.getElementById("backTo1").addEventListener("click", () => { currentStep = 1; renderStep(); });
+    document.getElementById("toStep3").addEventListener("click", () => {
+      const err = validateStep(2);
+      if (err) return setError(err);
+      currentStep = 3;
+      renderStep();
+    });
+    document.getElementById("backTo2").addEventListener("click", () => { currentStep = 2; renderStep(); });
+    document.getElementById("toStep4").addEventListener("click", () => { currentStep = 4; renderStep(); });
+    document.getElementById("backTo3").addEventListener("click", () => { currentStep = 3; renderStep(); });
+    document.getElementById("saveOffline").addEventListener("click", saveOffline);
+    document.getElementById("syncButton").addEventListener("click", syncQueued);
+    els.loadDefaults.addEventListener("click", loadDefaultSymptoms);
+    els.caseType.addEventListener("change", (e) => renderLibrary(e.target.value));
+    els.caseType.addEventListener("input", (e) => renderLibrary(e.target.value));
+
+    window.addEventListener("online", updateNetworkBanner);
+    window.addEventListener("offline", updateNetworkBanner);
+
+    updateNetworkBanner();
+    refreshQueueUi();
+    renderLibrary(els.caseType.value);
+    renderStep();
+  </script>
+</body>
+</html>

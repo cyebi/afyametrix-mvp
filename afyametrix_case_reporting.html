@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Afyametrix Case Reporting</title>
+  <style>
+    :root {
+      font-family: "Trebuchet MS", "Gill Sans", "Segoe UI", sans-serif;
+      color: #0a1628;
+      background: #f2f7f4;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    .page {
+      min-height: 100vh;
+      padding: 1rem;
+      background: linear-gradient(135deg, #eaf4ee 0%, #f9fbfa 60%, #dfeee5 100%);
+      display: flex;
+      justify-content: center;
+    }
+    .container { width: 100%; max-width: 640px; }
+    .network {
+      margin-top: 1rem;
+      padding: 0.9rem 1rem;
+      border-radius: 10px;
+      background: #d9f0e2;
+      color: #144a2b;
+      display: flex;
+      gap: 0.6rem;
+    }
+    .card {
+      margin-top: 1rem;
+      padding: 1.25rem;
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 8px 24px rgba(10, 22, 40, 0.08);
+    }
+    .step { color: #486378; margin-top: 0; }
+    label {
+      display: block;
+      font-weight: 600;
+      margin: 0.85rem 0 0.25rem;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 0.7rem;
+      border: 1px solid #cbd8d0;
+      border-radius: 8px;
+      font: inherit;
+      font-size: 1rem;
+    }
+    textarea { min-height: 92px; resize: vertical; }
+    .actions {
+      display: flex;
+      gap: 0.6rem;
+      margin-top: 1rem;
+      flex-direction: column;
+    }
+    button {
+      border: 0;
+      border-radius: 8px;
+      background: #1a6b3c;
+      color: #fff;
+      padding: 0.8rem 1rem;
+      min-height: 48px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .secondary { background: #5b6b78; }
+    .status { color: #1a6b3c; margin-top: 0.75rem; }
+    .timeline { margin: 0.25rem 0 0; padding-left: 1.1rem; color: #334d61; }
+    @media (min-width: 640px) {
+      .actions { flex-direction: row; }
+      .actions button { flex: 1; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="container">
+      <header>
+        <h1>Afyametrix Case Reporting</h1>
+        <p>CHPS frontline reporting with offline-first submission and district sync.</p>
+      </header>
+
+      <section class="network">
+        <strong>Online</strong>
+        <span>Ready to sync queued reports</span>
+      </section>
+
+      <section class="card">
+        <h2>Case Report Form</h2>
+        <p class="step">Step 1 of 4</p>
+
+        <label for="caseType">Case Type</label>
+        <input id="caseType" type="text" placeholder="suspected_cholera" />
+
+        <label for="location">Location / CHPS Site</label>
+        <input id="location" type="text" placeholder="CHPS-001" />
+
+        <div class="actions">
+          <button type="button">Continue</button>
+        </div>
+
+        <div class="actions">
+          <button type="button">Sync Queued Reports</button>
+        </div>
+
+        <h3>Queue Status</h3>
+        <p>Queued reports: 0</p>
+        <p class="status">Ready</p>
+
+        <h3>Sync Timeline</h3>
+        <ul class="timeline">
+          <li>No sync activity yet.</li>
+        </ul>
+      </section>
+    </section>
+  </main>
+</body>
+</html>
