@@ -1,224 +1,173 @@
-import { useEffect, useState } from "react";
-import { syncQueuedCases } from "./api/sync";
-import {
-  listQueuedCaseReports,
-  markReportsSynced,
-  queueOfflineCaseReport,
-  readQueuedCount,
-} from "./offline/offlineQueue";
+import { useState } from "react";
 
-type FormStep = 1 | 2 | 3 | 4;
+type Screen = "splash" | "success" | "register" | "login" | "loginError";
+
+const screenLabels: Array<{ key: Screen; label: string }> = [
+  { key: "splash", label: "Splash" },
+  { key: "success", label: "Success" },
+  { key: "register", label: "Register" },
+  { key: "login", label: "Login" },
+  { key: "loginError", label: "Login Error" },
+];
+
+function LogoCard() {
+  return (
+    <div className="logo-card">
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <rect x="0" y="0" width="64" height="64" rx="18" fill="url(#logoGradient)" />
+        <path d="M15 34h10l4-9 7 16 5-8h8" fill="none" stroke="#EAFEFF" strokeWidth="4.2" strokeLinecap="round" />
+        <defs>
+          <linearGradient id="logoGradient" x1="0" y1="0" x2="64" y2="64">
+            <stop offset="0%" stopColor="#34E4D2" />
+            <stop offset="100%" stopColor="#0C948A" />
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+  );
+}
+
+function SplashScreen() {
+  return (
+    <section className="screen-frame splash">
+      <div className="status-bar">9:41</div>
+      <div className="splash-center">
+        <LogoCard />
+        <h1 className="brand-title">Afyametrix</h1>
+        <p className="muted-text center">Disease surveillance for frontline health workers</p>
+        <div className="tiny-divider" />
+        <p className="highlight-text">Smarter surveillance. Faster response.</p>
+      </div>
+    </section>
+  );
+}
+
+function SuccessScreen() {
+  return (
+    <section className="screen-frame success">
+      <div className="status-bar">9:41</div>
+      <div className="badge-top">Account created</div>
+      <div className="pulse-wrap">
+        <div className="ring ring-1" />
+        <div className="ring ring-2" />
+        <div className="ring ring-3" />
+        <div className="shield">✓</div>
+      </div>
+      <h2 className="hero-title">
+        You&apos;re in, <span>Amina!</span>
+      </h2>
+      <p className="muted-text center">
+        Your account is ready. You can now help detect, report, and respond to disease signals faster.
+      </p>
+      <div className="profile-card">
+        <div className="initials">AW</div>
+        <div>
+          <strong>Amina Wanjiku</strong>
+          <p>Community Health Worker · Kisumu County</p>
+        </div>
+        <span className="verified">Verified</span>
+      </div>
+      <div className="action-stack">
+        <button className="list-action">Report unusual symptoms</button>
+        <button className="list-action">View local disease alerts</button>
+        <button className="list-action">Submit verified field updates</button>
+      </div>
+      <button className="primary-button">Enter dashboard</button>
+    </section>
+  );
+}
+
+function RegisterScreen() {
+  return (
+    <section className="screen-frame register">
+      <div className="status-bar">9:41</div>
+      <div className="top-logo-stack">
+        <LogoCard />
+        <h2 className="hero-title small">
+          Create <span>Afyametrix</span> Account
+        </h2>
+        <p className="muted-text center">Disease surveillance access for frontline health teams</p>
+      </div>
+      <div className="steps">
+        <span>Personal</span>
+        <span>Work details</span>
+        <span>Security</span>
+      </div>
+      <div className="form-panel">
+        <label>Full Name</label>
+        <input placeholder="e.g. Amina Wanjiku" />
+        <label>Phone Number</label>
+        <input placeholder="+254 7XX XXX XXX" />
+        <label>Email Address</label>
+        <input placeholder="worker@health.go.ke" />
+        <label>Role / Cadre</label>
+        <input placeholder="Select your cadre..." />
+      </div>
+    </section>
+  );
+}
+
+function LoginScreen({ error }: { error: boolean }) {
+  return (
+    <section className={`screen-frame login ${error ? "login-error" : ""}`}>
+      <div className="status-bar">9:41</div>
+      {error && (
+        <div className="error-banner">
+          <strong>Login Failed — 2 of 3 attempts used</strong>
+          <p>Incorrect email or password. Account locks after 3 failed attempts.</p>
+        </div>
+      )}
+      <div className="top-logo-stack">
+        <LogoCard />
+        <p className="mini-brand">Afyametrix</p>
+      </div>
+      <h2 className="hero-title left">
+        Welcome <span>back.</span>
+      </h2>
+      <p className="muted-text left">Sign in to continue monitoring disease signals in your area.</p>
+      <div className="form-panel thin">
+        <label>Email Address</label>
+        <input defaultValue={error ? "amina.w@gmail" : "worker@health.go.ke"} />
+        {error && <p className="field-error">No account found with this email address.</p>}
+        <label>Password</label>
+        <input defaultValue="••••••••••" />
+        {error && <p className="field-error">Incorrect password. 1 attempt remaining.</p>}
+      </div>
+      <a className="text-link" href="#">
+        Forgot password?
+      </a>
+      <button className={`primary-button ${error ? "danger" : ""}`}>{error ? "Sign in failed" : "Sign in"}</button>
+    </section>
+  );
+}
 
 export function App() {
-  const [step, setStep] = useState<FormStep>(1);
-  const [queuedCount, setQueuedCount] = useState(0);
-  const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
-  const [status, setStatus] = useState("Ready");
-  const [syncTimeline, setSyncTimeline] = useState<string[]>([]);
-  const [form, setForm] = useState({
-    caseType: "suspected_cholera",
-    severity: "urgent" as "low" | "medium" | "high" | "urgent",
-    symptoms: "",
-    location: "CHPS-001",
-    patientGroup: "adult",
-    riskSignals: "",
-  });
-
-  useEffect(() => {
-    void refreshCount();
-  }, []);
-
-  useEffect(() => {
-    const goOnline = () => setIsOnline(true);
-    const goOffline = () => setIsOnline(false);
-    window.addEventListener("online", goOnline);
-    window.addEventListener("offline", goOffline);
-    return () => {
-      window.removeEventListener("online", goOnline);
-      window.removeEventListener("offline", goOffline);
-    };
-  }, []);
-
-  async function refreshCount() {
-    const count = await readQueuedCount();
-    setQueuedCount(count);
-  }
-
-  async function addOfflineReport() {
-    if (form.symptoms.trim().length < 3) {
-      setStatus("Please enter symptoms (at least 3 characters).");
-      return;
-    }
-
-    await queueOfflineCaseReport({
-      clientRef: crypto.randomUUID(),
-      caseType: form.caseType,
-      severity: form.severity,
-      symptoms: `${form.symptoms}; group=${form.patientGroup}; risk=${form.riskSignals || "none"}`,
-      location: form.location,
-      occurredAt: new Date().toISOString(),
-    });
-    setStatus("Offline report queued");
-    setSyncTimeline((prev) => [`${new Date().toLocaleTimeString()}: Case saved offline`, ...prev].slice(0, 6));
-    setForm((current) => ({ ...current, symptoms: "" }));
-    setStep(1);
-    await refreshCount();
-  }
-
-  async function syncReports() {
-    setStatus("Syncing queued reports...");
-    setSyncTimeline((prev) => [`${new Date().toLocaleTimeString()}: Sync started`, ...prev].slice(0, 6));
-    try {
-      const queued = await listQueuedCaseReports();
-      if (queued.length === 0) {
-        setStatus("No queued reports to sync.");
-        setSyncTimeline((prev) => [`${new Date().toLocaleTimeString()}: No queued items`, ...prev].slice(0, 6));
-        return;
-      }
-
-      const response = await syncQueuedCases(queued);
-      const syncedIds = queued
-        .filter((q) => response.results.some((r) => r.clientRef === q.clientRef))
-        .map((q) => q.id);
-      await markReportsSynced(syncedIds);
-      await refreshCount();
-      setStatus(`Synced ${response.accepted}/${response.received} reports (${response.duplicates} duplicates).`);
-      setSyncTimeline((prev) => [
-        `${new Date().toLocaleTimeString()}: Sync complete (${response.accepted}/${response.received})`,
-        ...prev,
-      ].slice(0, 6));
-    } catch (error) {
-      setStatus(`Sync failed: ${error instanceof Error ? error.message : "Unknown error"}`);
-      setSyncTimeline((prev) => [`${new Date().toLocaleTimeString()}: Sync failed`, ...prev].slice(0, 6));
-    }
-  }
-
-  const canNextStep1 = form.caseType.trim().length > 2 && form.location.trim().length > 1;
-  const canNextStep2 = form.symptoms.trim().length >= 3;
+  const [screen, setScreen] = useState<Screen>("splash");
 
   return (
-    <main className="page">
-      <header>
-        <h1>Afyametrix Onboarding Preview</h1>
-        <p>CHPS frontline reporting with offline-first submission and district sync.</p>
+    <main className="preview-page">
+      <header className="preview-header">
+        <h1>Afyametrix Mobile UI Preview</h1>
+        <p>Figma onboarding and login screens wired for quick visual iteration.</p>
       </header>
-      <section className={`network ${isOnline ? "online" : "offline"}`}>
-        <strong>{isOnline ? "Online" : "Offline"}</strong>
-        <span>{isOnline ? "Ready to sync queued reports" : "You can continue capturing cases offline"}</span>
-      </section>
-      <section className="card">
-        <h2>Case Report Form</h2>
-        <p className="step">Step {step} of 4</p>
+      <nav className="screen-nav">
+        {screenLabels.map((item) => (
+          <button
+            key={item.key}
+            type="button"
+            className={screen === item.key ? "nav-pill active" : "nav-pill"}
+            onClick={() => setScreen(item.key)}
+          >
+            {item.label}
+          </button>
+        ))}
+      </nav>
 
-        {step === 1 && (
-          <>
-            <label>Case Type</label>
-            <input
-              value={form.caseType}
-              onChange={(e) => setForm((current) => ({ ...current, caseType: e.target.value }))}
-            />
-            <label>Location / CHPS Site</label>
-            <input
-              value={form.location}
-              onChange={(e) => setForm((current) => ({ ...current, location: e.target.value }))}
-            />
-            <button disabled={!canNextStep1} onClick={() => setStep(2)}>
-              Continue
-            </button>
-          </>
-        )}
-
-        {step === 2 && (
-          <>
-            <label>Symptoms</label>
-            <textarea
-              value={form.symptoms}
-              onChange={(e) => setForm((current) => ({ ...current, symptoms: e.target.value }))}
-              placeholder="e.g. vomiting, diarrhea, fever"
-            />
-            <label>Severity</label>
-            <select
-              value={form.severity}
-              onChange={(e) =>
-                setForm((current) => ({
-                  ...current,
-                  severity: e.target.value as "low" | "medium" | "high" | "urgent",
-                }))
-              }
-            >
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-              <option value="urgent">Urgent</option>
-            </select>
-            <div className="actions">
-              <button className="secondary" onClick={() => setStep(1)}>
-                Back
-              </button>
-              <button disabled={!canNextStep2} onClick={() => setStep(3)}>
-                Continue
-              </button>
-            </div>
-          </>
-        )}
-
-        {step === 3 && (
-          <>
-            <label>Patient Group</label>
-            <select
-              value={form.patientGroup}
-              onChange={(e) => setForm((current) => ({ ...current, patientGroup: e.target.value }))}
-            >
-              <option value="child">Child</option>
-              <option value="adult">Adult</option>
-              <option value="elderly">Elderly</option>
-            </select>
-            <label>Risk Signals (optional)</label>
-            <input
-              value={form.riskSignals}
-              onChange={(e) => setForm((current) => ({ ...current, riskSignals: e.target.value }))}
-              placeholder="e.g. cluster in same household"
-            />
-            <div className="actions">
-              <button className="secondary" onClick={() => setStep(2)}>
-                Back
-              </button>
-              <button onClick={() => setStep(4)}>Continue</button>
-            </div>
-          </>
-        )}
-
-        {step === 4 && (
-          <>
-            <h3>Review</h3>
-            <p><strong>Case:</strong> {form.caseType}</p>
-            <p><strong>Severity:</strong> {form.severity}</p>
-            <p><strong>Location:</strong> {form.location}</p>
-            <p><strong>Symptoms:</strong> {form.symptoms}</p>
-            <div className="actions">
-              <button className="secondary" onClick={() => setStep(3)}>
-                Back
-              </button>
-              <button onClick={addOfflineReport}>Save Offline</button>
-            </div>
-          </>
-        )}
-
-        <div className="actions">
-          <button onClick={syncReports}>Sync Queued Reports</button>
-        </div>
-
-        <h3>Queue Status</h3>
-        <p>Queued reports: {queuedCount}</p>
-        <p className="status">{status}</p>
-        <h3>Sync Timeline</h3>
-        <ul className="timeline">
-          {syncTimeline.length === 0 && <li>No sync activity yet.</li>}
-          {syncTimeline.map((item, index) => (
-            <li key={`${item}-${index}`}>{item}</li>
-          ))}
-        </ul>
-      </section>
+      {screen === "splash" && <SplashScreen />}
+      {screen === "success" && <SuccessScreen />}
+      {screen === "register" && <RegisterScreen />}
+      {screen === "login" && <LoginScreen error={false} />}
+      {screen === "loginError" && <LoginScreen error />}
     </main>
   );
 }
