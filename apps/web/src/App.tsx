@@ -99,7 +99,7 @@ export function App() {
   return (
     <main className="page">
       <header>
-        <h1>Afyametrix Case Reporting</h1>
+        <h1>Afyametrix Onboarding Preview</h1>
         <p>CHPS frontline reporting with offline-first submission and district sync.</p>
       </header>
       <section className={`network ${isOnline ? "online" : "offline"}`}>
